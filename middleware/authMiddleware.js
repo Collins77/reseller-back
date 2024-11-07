@@ -16,7 +16,6 @@ exports.requireSignIn = async (req, res, next) => {
 
     // Verify the token using the secret key
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
 
     // Attach the decoded data (e.g., reseller ID) to the request object
     req.reseller = decoded;

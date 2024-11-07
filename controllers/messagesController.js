@@ -5,7 +5,6 @@ const getMessages = async (request, response, next) => {
     try {
         const user1 = request.userId;
         const user2 = request.body.id;
-        console.log(user1)
 
         if(!user1 || !user2) {
             return response.status(400).send("Both user IDs are required");

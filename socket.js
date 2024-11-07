@@ -28,14 +28,16 @@ const setupSocket = (server) => {
         const recipientSocketId = userSocketMap.get(message.recipient);
 
         const createdMessage = await Message.create(message);
+        // console.log(createdMessage)
 
         const messageData = await Message.findById(createdMessage._id)
         .populate("sender", "id email firstName lastName")
         .populate("recipient", "id email firstName lastName");
+        console.log(messageData);
 
         if(recipientSocketId) {
             io.to(recipientSocketId).emit("receiveMessage", messageData);
-        }
+        } 
 
         if(senderSocketId) {
             io.to(senderSocketId).emit("receiveMessage", messageData);
