@@ -49,6 +49,23 @@ exports.verifySupplierToken = (req, res, next) => {
       next();
   })
 }
+// exports.verifyUserToken = (req, res, next) => {
+//   const token = req.cookies.jwt;
+//   if (!token) return res.status(401).send("You are not authenticated!");
+
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
+//     if (err) return res.status(403).send("Token is not valid!");
+
+//     // Check for either `resellerId` or `supplierId` in the payload
+//     req.userId = payload.resellerId || payload.supplierId;
+    
+//     if (!req.userId) {
+//       return res.status(403).send("Token does not contain a valid user ID!");
+//     }
+
+//     next();
+//   });
+// };
 exports.verifyAdminToken = (req, res, next) => {
   const token = req.cookies.jwt;
   if (!token) return res.status(401).send("You are not authenticated!")
@@ -87,27 +104,26 @@ exports.requiresAdminSignIn = async (req, res, next) => {
   }
 }
 
-//admin acceess
-// exports.isAdmin = async (req, res, next) => {
-//   try {
-//     const admin = await Admin.findById(req.admin._id);
-//     if (admin.status !== true) {
-//       return res.status(401).send({
-//         success: false,
-//         message: "UnAuthorized Access",
-//       });
-//     } else {
-//       next();
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     res.status(401).send({
-//       success: false,
-//       error,
-//       message: "Error in admin middelware",
-//     });
-//   }
-// };
+exports.verifyUserToken = (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) return res.status(401).send("You are not authenticated!");
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
+    if (err) return res.status(403).send("Token is not valid!");
+
+    // Check for either `resellerId` or `supplierId` in the payload
+    req.userId = payload.resellerId || payload.supplierId;
+    
+    if (!req.userId) {
+      return res.status(403).send("Token does not contain a valid user ID!");
+    }
+
+    next();
+  });
+};
+
+
+
 exports.isSupplier = async (req, res, next) => {
   try {
     const decode = jwt.verify(

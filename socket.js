@@ -11,27 +11,27 @@ const setupSocket = (server) => {
         }
     });
 
-    const resellerSocketMap = new Map();
+    const userSocketMap = new Map();
 
     const disconnect = (socket) => {
         console.log(`Client Disconnected: ${socket.id}`);
-        for(const [resellerId, socketId] of resellerSocketMap.entries()) {
+        for(const [userId, socketId] of userSocketMap.entries()) {
             if(socketId===socket.id) {
-                resellerSocketMap.delete(resellerId);
+                userSocketMap.delete(userId);
                 break;
             }
         }
     };
 
     const sendMessage = async (message) => {
-        const senderSocketId = resellerSocketMap.get(message.sender);
-        const recipientSocketId = resellerSocketMap.get(message.recipient);
+        const senderSocketId = userSocketMap.get(message.sender);
+        const recipientSocketId = userSocketMap.get(message.recipient);
 
         const createdMessage = await Message.create(message);
 
         const messageData = await Message.findById(createdMessage._id)
-        .populate("sender", "id email firstName lastName companyName")
-        .populate("recipient", "id email firstName lastName companyName");
+        .populate("sender", "id email firstName lastName")
+        .populate("recipient", "id email firstName lastName");
 
         if(recipientSocketId) {
             io.to(recipientSocketId).emit("receiveMessage", messageData);
@@ -42,6 +42,8 @@ const setupSocket = (server) => {
         }
 
     }
+    
+    
 
     const sendChannelMessage = async(message) => {
         const {channelId, sender, content, messageType, fileUrl} = message;
@@ -55,7 +57,7 @@ const setupSocket = (server) => {
             fileUrl,
         });
 
-        const messageData = await Message.findById(createdMessage._id).populate("sender", "id email firstName lastName companyName").exec();
+        const messageData = await Message.findById(createdMessage._id).populate("sender", "id email firstName lastName").exec();
 
         await Channel.findByIdAndUpdate(channelId, {
             $push: { messages: createdMessage._id },
@@ -67,12 +69,12 @@ const setupSocket = (server) => {
 
         if(channel && channel.members) {
             channel.members.forEach((member) => {
-                const memberSocketId = resellerSocketMap.get(member._id.toString());
+                const memberSocketId = userSocketMap.get(member._id.toString());
                 if(memberSocketId) {
                     io.to(memberSocketId).emit("receive-channel-message", finalData);
                 }
             });
-            const adminSocketId = resellerSocketMap.get(channel.admin._id.toString());
+            const adminSocketId = userSocketMap.get(channel.admin._id.toString());
             if(adminSocketId) {
                 io.to(adminSocketId).emit("receive-channel-message", finalData);
             }
@@ -80,13 +82,13 @@ const setupSocket = (server) => {
     }
 
     io.on("connection", (socket) => {
-        const resellerId = socket.handshake.query.resellerId;
+        const userId = socket.handshake.query.userId;
 
-        if(resellerId) {
-            resellerSocketMap.set(resellerId, socket.id);
-            console.log(`Reseller connected: ${resellerId} with socket ID: ${socket.id}`);
+        if(userId) {
+            userSocketMap.set(userId, socket.id);
+            console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
         } else {
-            console.log("Reseller id not provided during connection")
+            console.log("User id not provided during connection")
         }
 
         socket.on("sendMessage", sendMessage);
@@ -95,4 +97,4 @@ const setupSocket = (server) => {
     })
 };
 
-module.exports = setupSocket
+module.exports = setupSocket;

@@ -1,11 +1,11 @@
 const express = require("express");
 const contactsController = require("../controllers/contactsController");
-const { verifyToken } = require("../middleware/authMiddleware");
+const { verifyToken, verifyUserToken } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/search", verifyToken, contactsController.searchContacts);
-router.get("/get-contacts-for-dm", verifyToken, contactsController.getContactsForDMList);
-router.get("/get-all-contacts", verifyToken, contactsController.getAllContacts);
+router.post("/search", verifyUserToken, contactsController.searchContacts);
+router.get("/get-contacts-for-dm", verifyUserToken, contactsController.getContactsForDMList);
+router.get("/get-all-contacts", verifyUserToken, contactsController.getAllContacts);
 
 module.exports = router;

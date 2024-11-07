@@ -1,10 +1,11 @@
-const {mkdirSync, renameSync} = require("fs");
+const { mkdirSync, renameSync } = require("fs");
 const Message = require("../models/Messages");
 
 const getMessages = async (request, response, next) => {
     try {
-        const user1 = request.resellerId;
+        const user1 = request.userId;
         const user2 = request.body.id;
+        console.log(user1)
 
         if(!user1 || !user2) {
             return response.status(400).send("Both user IDs are required");
@@ -43,4 +44,4 @@ const uploadFile = async (request, response, next) => {
     }
 }
 
-module.exports = {getMessages, uploadFile}
+module.exports = { getMessages, uploadFile };
